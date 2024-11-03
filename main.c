@@ -93,6 +93,10 @@ int main(){
                         getchar();
                     }
 
+                     printf("Give student's phone number: ");
+                        fgets(student.phone, 15, stdin);
+                        student.phone[strlen(student.phone) - 1] = '\0'; 
+
                     printf("Give student section : ");
                     scanf("%c", &student.section);
                     getchar();
