@@ -224,7 +224,7 @@ int BuildBST(BinTreePointer *Root){
     }
     else{
         while(TRUE){
-            nscan = fscanf(fp,"%d, %20[^,], %20[^,], %c, %d, %g%c", &student.id, student.firstname, student.lastname, &student.section, &student.batch, &student.grade, &termch);
+            nscan = fscanf(fp,"%d, %20[^,], %20[^,], %c, %d, %g%c", &student.id, student.firstname, student.lastname, &student.section, &student.batch, &student.grade, &student.phone, &termch);
             if (nscan == EOF) break;
             if (nscan != 7 || termch != '\n'){
                 printf("Improper file format\n");
