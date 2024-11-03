@@ -51,7 +51,7 @@ int main(){
     size = BuildBST(&Root);
     do{
          // Center "Metropolitan University" at the top of the menu
-        printf("\n%*s\n", 25 + strlen("Metropolitan University") / 2, "Metropolitan University");
+        printf("\n%*s\n", 21 + strlen("Metropolitan University") / 2, "Metropolitan University");
         menu(&choice);
         if(choice == 1){
             fp = fopen("students_data.dat","a");
