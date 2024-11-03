@@ -292,7 +292,7 @@ void printStudentsWithGrade(){
         printf("Can't open students_data.dat\n");
     else{
         while(TRUE){
-            nscan = fscanf(infile,"%d, %20[^,], %20[^,], %c, %d, %g%c", &student.id, student.firstname, student.lastname, &student.section, &student.batch, &student.grade, &termch);
+            nscan = fscanf(infile,"%d, %20[^,], %20[^,], %c, %d, %g%c", &student.id, student.firstname, student.lastname, &student.section, &student.batch, &student.grade, &student.grade, &termch);
             if (nscan == EOF) break;
             if (nscan != 7 || termch != '\n'){
                 printf("Improper file format\n");
@@ -300,7 +300,7 @@ void printStudentsWithGrade(){
             }
             else
                 if(student.grade >= theGrade)
-                    printf("%d, %s, %s, %c, %d, %g\n", student.id, student.firstname, student.lastname, student.section, student.batch, student.grade);
+                    printf("%d, %s, %s, %c, %d, %g\n", student.id, student.firstname, student.lastname, student.section, student.batch, student.grade, student.phone);
         }
     }
     fclose(infile);
