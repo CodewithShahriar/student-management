@@ -241,61 +241,71 @@ int BuildBST(BinTreePointer *Root){
 
 void PrintStudent(int RecNum){
     FILE *infile;
-    int nscan, lines;
+    int nscan, lines = 0;
     char termch;
     StudentT student;
 
-    lines = 0;
-
     infile = fopen("students_data.dat", "r");
-    if (infile == NULL)
+    if(infile == NULL)
         printf("Can't open students_data.dat\n");
     else{
         while(lines <= RecNum){
-            nscan = fscanf(infile,"%d, %20[^,], %20[^,], %c, %d, %g%c", &student.id, student.firstname, student.lastname, &student.section, &student.year, &student.grade, &termch);
-            if (nscan == EOF) break;
-            if (nscan != 7 || termch != '\n'){
+            nscan = fscanf(infile, "%d, %20[^,], %20[^,], %c, %d, %f%c", &student.id, student.firstname, student.lastname, &student.section, &student.year, &student.grade, &termch);
+            if(nscan == EOF) break;
+            if(nscan != 7 || termch != '\n'){
                 printf("Improper file format\n");
                 break;
             }
             else
                 lines++;
         }
-        if(lines != RecNum)
-            printf("%d, %s, %s, %c, %d, %0.2g\n", student.id, student.firstname, student.lastname, student.section, student.year, student.grade);
+        if(lines == RecNum + 1)  // Print only if the correct record is reached
+            printf("ID: %d, Name: %s %s, Section: %c, Registration Year: %d, Grade: %.2f\n", student.id, student.firstname, student.lastname, student.section, student.year, student.grade);
     }
     fclose(infile);
 }
 
-void printStudentsWithGrade(){
+void printStudentsWithGrade() {
     FILE *infile;
     int nscan;
     char termch;
     StudentT student;
     float theGrade;
+    boolean found = FALSE;
 
-    printf("Give the grade: ");
-    scanf("%g", &theGrade);
-    while(theGrade<0){
-        printf("Grade can't be a negative number\n");
-        printf("Give the grade: ");
-        scanf("%g", &theGrade);
+    printf("Give the specific grade: ");
+    scanf("%f", &theGrade);
+    while (theGrade < 0 || theGrade > 20) {
+        printf("Grade must be between 0 and 20.\n");
+        printf("Give the specific grade: ");
+        scanf("%f", &theGrade);
     }
 
     infile = fopen("students_data.dat", "r");
-    if (infile == NULL)
+    if (infile == NULL) {
         printf("Can't open students_data.dat\n");
-    else{
-        while(TRUE){
-            nscan = fscanf(infile,"%d, %20[^,], %20[^,], %c, %d, %g%c", &student.id, student.firstname, student.lastname, &student.section, &student.year, &student.grade, &termch);
+    } else {
+        printf("Students with grade = %.2f:\n", theGrade);
+        while (TRUE) {
+            nscan = fscanf(infile, "%d, %20[^,], %20[^,], %c, %d, %f%c", 
+                           &student.id, student.firstname, student.lastname, 
+                           &student.section, &student.year, &student.grade, 
+                           &termch);
             if (nscan == EOF) break;
-            if (nscan != 7 || termch != '\n'){
+            if (nscan != 7 || termch != '\n') {
                 printf("Improper file format\n");
                 break;
             }
-            else
-                if(student.grade >= theGrade)
-                    printf("%d, %s, %s, %c, %d, %g\n", student.id, student.firstname, student.lastname, student.section, student.year, student.grade);
+            // Check for exact grade match
+            if (student.grade == theGrade) {
+                printf("ID: %d, Name: %s %s, Section: %c, Registration Year: %d, Grade: %.2f\n", 
+                       student.id, student.firstname, student.lastname, 
+                       student.section, student.year, student.grade);
+                found = TRUE;
+            }
+        }
+        if (!found) {
+            printf("No students found with grade = %.2f\n", theGrade);
         }
     }
     fclose(infile);
