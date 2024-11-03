@@ -27,6 +27,7 @@ typedef struct{
     char section;
     int batch;
     float grade;
+    char phone[15];
 }StudentT;
 
 void CreateBST(BinTreePointer *Root);
