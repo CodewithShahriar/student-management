@@ -257,7 +257,7 @@ void PrintStudent(int RecNum){
         printf("Can't open students_data.dat\n");
     else{
         while(lines <= RecNum){
-            nscan = fscanf(infile,"%d, %20[^,], %20[^,], %c, %d, %g%c", &student.id, student.firstname, student.lastname, &student.section, &student.batch, &student.grade, &termch);
+            nscan = fscanf(infile,"%d, %20[^,], %20[^,], %c, %d, %g%c", &student.id, student.firstname, student.lastname, &student.section, &student.batch, &student.grade, &student.phone, &termch);
             if (nscan == EOF) break;
             if (nscan != 7 || termch != '\n'){
                 printf("Improper file format\n");
@@ -267,7 +267,7 @@ void PrintStudent(int RecNum){
                 lines++;
         }
         if(lines != RecNum)
-            printf("%d, %s, %s, %c, %d, %0.2g\n", student.id, student.firstname, student.lastname, student.section, student.batch, student.grade);
+            printf("%d, %s, %s, %c, %d, %0.2g\n", student.id, student.firstname, student.lastname, student.section, student.batch, student.grade, student.phone);
     }
     fclose(infile);
 }
