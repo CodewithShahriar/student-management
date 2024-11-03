@@ -141,20 +141,33 @@ int main(){
             printf("Print students data by grade: \n");
             printStudentsWithGrade();
         }
-    }while(choice!=5);
+
+        if (choice == 5) {
+            viewByBatchOrSection();
+        }
+
+        if (choice ==6){
+            printf("Enter student's ID to delete: ");
+                scanf("%d", &student.id);
+                RecBSTDelete(&Root, student.id);
+                printf("Student with ID %d has been deleted.\n", student.id);
+        }
+    }while(choice!=7);
 
     system("PAUSE");
 }
 
 void menu(int *choice){
-    printf("\n                  MENU                  \n");
+   printf("\n                  MENU                  \n");
     printf("-------------------------------------------------\n");
     printf("1. Insert new student\n");
     printf("2. Search for a student\n");
     printf("3. Print all students (Traverse Inorder)\n");
     printf("4. Print students data by grade\n");
-    printf("5. Quit\n");
-    printf("\nChoice: ");
+    printf("5. View by batch or section\n");
+    printf("6. Delete a student\n");
+    printf("7. Quit\n");
+    printf("Choice: ");
     do{
         scanf("%d", choice);
         getchar();
@@ -198,6 +211,31 @@ void RecBSTSearch(BinTreePointer Root, BinTreeElementType KeyValue, boolean *Fou
                 *LocPtr = Root;
             }
 }
+
+void RecBSTDelete(BinTreePointer *Root, int id) {
+    if (*Root == NULL) return;
+
+    if (id < (*Root)->Data.id)
+        RecBSTDelete(&(*Root)->LChild, id);
+    else if (id > (*Root)->Data.id)
+        RecBSTDelete(&(*Root)->RChild, id);
+    else {
+        BinTreePointer temp = *Root;
+        if ((*Root)->LChild == NULL)
+            *Root = (*Root)->RChild;
+        else if ((*Root)->RChild == NULL)
+            *Root = (*Root)->LChild;
+        else {
+            BinTreePointer replace = (*Root)->LChild;
+            while (replace->RChild != NULL)
+                replace = replace->RChild;
+            (*Root)->Data = replace->Data;
+            RecBSTDelete(&(*Root)->LChild, replace->Data.id);
+        }
+        free(temp);
+    }
+}
+
 
 void RecBSTInorder(BinTreePointer Root){
     if (Root!=NULL){
@@ -306,4 +344,67 @@ void printStudentsWithGrade(){
         }
     }
     fclose(infile);
+}
+
+void viewByBatchOrSection() {
+    FILE *fp;
+    StudentT student;
+    char filter;
+    int batch;
+    char section;
+    int found = 0;
+
+    printf("Filter by (B)atch or (S)ection? ");
+    scanf(" %c", &filter);
+    filter = toupper(filter);  // Convert to uppercase to make input case-insensitive
+
+    if (filter != 'B' && filter != 'S') {
+        printf("Invalid option. Please enter 'B' for batch or 'S' for section.\n");
+        return;
+    }
+
+    fp = fopen("students_data.dat", "r");
+    if (fp == NULL) {
+        printf("Can't open students_data.dat\n");
+        exit(1);
+    }
+
+    if (filter == 'B') {
+        printf("Enter batch number: ");
+        scanf("%d", &batch);
+
+        while (fscanf(fp, "%d, %19[^,], %19[^,], %c, %d, %f, %14[^\n]",
+                      &student.id, student.firstname, student.lastname,
+                      &student.section, &student.batch, &student.grade, student.phone) != EOF) {
+            if (student.batch == batch) {
+                printf("ID: %d, Name: %s %s, Section: %c, Batch: %d, Grade: %.2f, Phone: %s\n",
+                       student.id, student.firstname, student.lastname, student.section,
+                       student.batch, student.grade, student.phone);
+                found = 1;
+                break;  // Exit function after finding and printing the first matching student
+            }
+        }
+    } else if (filter == 'S') {
+        printf("Enter section letter: ");
+        scanf(" %c", &section);
+        section = toupper(section);  // Normalize to uppercase for consistency
+
+        while (fscanf(fp, "%d, %19[^,], %19[^,], %c, %d, %f, %14[^\n]",
+                      &student.id, student.firstname, student.lastname,
+                      &student.section, &student.batch, &student.grade, student.phone) != EOF) {
+            if (toupper(student.section) == section) {
+                printf("ID: %d, Name: %s %s, Section: %c, Batch: %d, Grade: %.2f, Phone: %s\n",
+                       student.id, student.firstname, student.lastname, student.section,
+                       student.batch, student.grade, student.phone);
+                found = 1;
+                break;  // Exit function after finding and printing the first matching student
+            }
+        }
+    }
+
+    fclose(fp);
+
+    if (!found) {
+        printf("No student found with the specified batch or section.\n");
+    }
 }
