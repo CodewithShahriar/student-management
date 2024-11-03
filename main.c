@@ -25,9 +25,8 @@ typedef struct{
     char firstname[20];
     char lastname[20];
     char section;
-    int batch;
+    int year;
     float grade;
-    char phone[15];
 }StudentT;
 
 void CreateBST(BinTreePointer *Root);
@@ -50,8 +49,6 @@ int main(){
 
     size = BuildBST(&Root);
     do{
-         // Center "Metropolitan University" at the top of the menu
-        printf("\n%*s\n", 21 + strlen("Metropolitan University") / 2, "Metropolitan University");
         menu(&choice);
         if(choice == 1){
             fp = fopen("students_data.dat","a");
@@ -64,7 +61,7 @@ int main(){
                 scanf("%d", &student.id);
                 getchar();
                 while(student.id<0){
-                    printf("ID can't be a negative number\n");
+                    printf("id can't be a negative number\n");
                     printf("Give student's ID: ");
                     scanf("%d", &student.id);
                     getchar();
@@ -80,38 +77,36 @@ int main(){
                     fgets(student.lastname,20,stdin);
                     student.lastname[strlen(student.lastname)-1]='\0';
 
-                    printf("Give student's batch: ");
-                    scanf("%d", &student.batch);
+                    printf("Give student's registration year: ");
+                    scanf("%d", &student.year);
                     getchar();
 
-                    printf("Give student's grade(out of 4): ");
+                    printf("Give student's grade(0-20): ");
                     scanf("%g", &student.grade);
                     getchar();
                     while(student.grade<0 || student.grade>20){
-                        printf("Give student's grade(out of 4): ");
+                        printf("Give student's grade(0-20): ");
                         scanf("%g", &student.grade);
                         getchar();
                     }
 
-                     printf("Give student's phone number: ");
-                        fgets(student.phone, 15, stdin);
-                        student.phone[strlen(student.phone) - 1] = '\0'; 
-
                     printf("Give student section : ");
-                    scanf("%c", &student.section);
-                    getchar();
-                    while(!isalpha(student.section)){
-                        printf("Please enter a valid section: ");
                         scanf("%c", &student.section);
                         getchar();
-                    }
 
+                        // Validation to ensure section is between 'A' and 'Z'
+                        while(student.section < 'A' || student.section > 'Z'){
+                            printf("Section must be a letter between A and Z.\n");
+                            printf("Give student section (A-Z): ");
+                            scanf("%c", &student.section);
+                            getchar();
+                        }
 
                     printf("\nsize = %d\n", size);
                     indexRec.recNo = size;
                     RecBSTInsert(&Root, indexRec);
-                    fprintf(fp, "%d, %s, %s, %c, %d, %g, %s%c", student.id, student.firstname, student.lastname,
-                            student.section, student.batch, student.grade, student.phone, '\n');
+                    fprintf(fp,"%d, %s, %s, %c, %d, %g%c", student.id, student.firstname, student.lastname,
+                            student.section, student.year, student.grade, '\n');
 
                     size++;
                     fclose(fp);
@@ -138,36 +133,23 @@ int main(){
             printf("\n");
         }
         if(choice == 4){
-            printf("Print students data by grade: \n");
+            printf("Print students with a >= given grade: \n");
             printStudentsWithGrade();
         }
-
-        if (choice == 5) {
-            viewByBatchOrSection();
-        }
-
-        if (choice ==6){
-            printf("Enter student's ID to delete: ");
-                scanf("%d", &student.id);
-                RecBSTDelete(&Root, student.id);
-                printf("Student with ID %d has been deleted.\n", student.id);
-        }
-    }while(choice!=7);
+    }while(choice!=5);
 
     system("PAUSE");
 }
 
 void menu(int *choice){
-   printf("\n                  MENU                  \n");
+    printf("\n                  MENU                  \n");
     printf("-------------------------------------------------\n");
     printf("1. Insert new student\n");
     printf("2. Search for a student\n");
     printf("3. Print all students (Traverse Inorder)\n");
-    printf("4. Print students data by grade\n");
-    printf("5. View by batch or section\n");
-    printf("6. Delete a student\n");
-    printf("7. Quit\n");
-    printf("Choice: ");
+    printf("4. Print students with a >= given grade\n");
+    printf("5. Quit\n");
+    printf("\nChoice: ");
     do{
         scanf("%d", choice);
         getchar();
@@ -212,31 +194,6 @@ void RecBSTSearch(BinTreePointer Root, BinTreeElementType KeyValue, boolean *Fou
             }
 }
 
-void RecBSTDelete(BinTreePointer *Root, int id) {
-    if (*Root == NULL) return;
-
-    if (id < (*Root)->Data.id)
-        RecBSTDelete(&(*Root)->LChild, id);
-    else if (id > (*Root)->Data.id)
-        RecBSTDelete(&(*Root)->RChild, id);
-    else {
-        BinTreePointer temp = *Root;
-        if ((*Root)->LChild == NULL)
-            *Root = (*Root)->RChild;
-        else if ((*Root)->RChild == NULL)
-            *Root = (*Root)->LChild;
-        else {
-            BinTreePointer replace = (*Root)->LChild;
-            while (replace->RChild != NULL)
-                replace = replace->RChild;
-            (*Root)->Data = replace->Data;
-            RecBSTDelete(&(*Root)->LChild, replace->Data.id);
-        }
-        free(temp);
-    }
-}
-
-
 void RecBSTInorder(BinTreePointer Root){
     if (Root!=NULL){
         RecBSTInorder(Root->LChild);
@@ -262,7 +219,7 @@ int BuildBST(BinTreePointer *Root){
     }
     else{
         while(TRUE){
-            nscan = fscanf(fp,"%d, %20[^,], %20[^,], %c, %d, %f, %14[^\n]%c", &student.id, student.firstname, student.lastname, &student.section, &student.batch, &student.grade, &student.phone, &termch);
+            nscan = fscanf(fp,"%d, %20[^,], %20[^,], %c, %d, %g%c", &student.id, student.firstname, student.lastname, &student.section, &student.year, &student.grade, &termch);
             if (nscan == EOF) break;
             if (nscan != 7 || termch != '\n'){
                 printf("Improper file format\n");
@@ -295,7 +252,7 @@ void PrintStudent(int RecNum){
         printf("Can't open students_data.dat\n");
     else{
         while(lines <= RecNum){
-            nscan = fscanf(infile, "%d, %20[^,], %20[^,], %c, %d, %f, %14[^\n]%c", &student.id, student.firstname, student.lastname, &student.section, &student.batch, &student.grade, &student.phone, &termch);
+            nscan = fscanf(infile,"%d, %20[^,], %20[^,], %c, %d, %g%c", &student.id, student.firstname, student.lastname, &student.section, &student.year, &student.grade, &termch);
             if (nscan == EOF) break;
             if (nscan != 7 || termch != '\n'){
                 printf("Improper file format\n");
@@ -305,7 +262,7 @@ void PrintStudent(int RecNum){
                 lines++;
         }
         if(lines != RecNum)
-            printf("%d, %s, %s, %c, %d, %.2f, %s\n", student.id, student.firstname, student.lastname, student.section, student.batch, student.grade, student.phone);
+            printf("%d, %s, %s, %c, %d, %0.2g\n", student.id, student.firstname, student.lastname, student.section, student.year, student.grade);
     }
     fclose(infile);
 }
@@ -330,9 +287,7 @@ void printStudentsWithGrade(){
         printf("Can't open students_data.dat\n");
     else{
         while(TRUE){
-            nscan = fscanf(infile, "%d, %20[^,], %20[^,], %c, %d, %f, %14[^\n]%c", 
-               &student.id, student.firstname, student.lastname, &student.section, 
-               &student.batch, &student.grade, &student.phone, &termch);
+            nscan = fscanf(infile,"%d, %20[^,], %20[^,], %c, %d, %g%c", &student.id, student.firstname, student.lastname, &student.section, &student.year, &student.grade, &termch);
             if (nscan == EOF) break;
             if (nscan != 7 || termch != '\n'){
                 printf("Improper file format\n");
@@ -340,69 +295,8 @@ void printStudentsWithGrade(){
             }
             else
                 if(student.grade >= theGrade)
-                    printf("%d, %s, %s, %c, %d, %.2f, %s\n", student.id, student.firstname, student.lastname, student.section, student.batch, student.grade, student.phone);
+                    printf("%d, %s, %s, %c, %d, %g\n", student.id, student.firstname, student.lastname, student.section, student.year, student.grade);
         }
     }
     fclose(infile);
-}
-
-void viewByBatchOrSection() {
-    FILE *fp;
-    StudentT student;
-    char filter;
-    int batch;
-    char section;
-    int found = 0;
-
-    printf("Filter by (B)atch or (S)ection? ");
-    scanf(" %c", &filter);
-    filter = toupper(filter);  // Convert to uppercase to make input case-insensitive
-
-    if (filter != 'B' && filter != 'S') {
-        printf("Invalid option. Please enter 'B' for batch or 'S' for section.\n");
-        return;
-    }
-
-    fp = fopen("students_data.dat", "r");
-    if (fp == NULL) {
-        printf("Can't open students_data.dat\n");
-        exit(1);
-    }
-
-    if (filter == 'B') {
-        printf("Enter batch number: ");
-        scanf("%d", &batch);
-
-        while (fscanf(fp, "%d, %19[^,], %19[^,], %c, %d, %f, %14[^\n]",
-                      &student.id, student.firstname, student.lastname,
-                      &student.section, &student.batch, &student.grade, student.phone) != EOF) {
-            if (student.batch == batch) {
-                printf("ID: %d, Name: %s %s, Section: %c, Batch: %d, Grade: %.2f, Phone: %s\n",
-                       student.id, student.firstname, student.lastname, student.section,
-                       student.batch, student.grade, student.phone);
-                found = 1;  // Mark that at least one student was found
-            }
-        }
-    } else if (filter == 'S') {
-        printf("Enter section letter: ");
-        scanf(" %c", &section);
-        section = toupper(section);  // Normalize to uppercase for consistency
-
-        while (fscanf(fp, "%d, %19[^,], %19[^,], %c, %d, %f, %14[^\n]",
-                      &student.id, student.firstname, student.lastname,
-                      &student.section, &student.batch, &student.grade, student.phone) != EOF) {
-            if (toupper(student.section) == section) {
-                printf("ID: %d, Name: %s %s, Section: %c, Batch: %d, Grade: %.2f, Phone: %s\n",
-                       student.id, student.firstname, student.lastname, student.section,
-                       student.batch, student.grade, student.phone);
-                found = 1;  // Mark that at least one student was found
-            }
-        }
-    }
-
-    fclose(fp);
-
-    if (!found) {
-        printf("No student found with the specified batch or section.\n");
-    }
 }
