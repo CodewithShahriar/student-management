@@ -380,8 +380,7 @@ void viewByBatchOrSection() {
                 printf("ID: %d, Name: %s %s, Section: %c, Batch: %d, Grade: %.2f, Phone: %s\n",
                        student.id, student.firstname, student.lastname, student.section,
                        student.batch, student.grade, student.phone);
-                found = 1;
-                break;  // Exit function after finding and printing the first matching student
+                found = 1;  // Mark that at least one student was found
             }
         }
     } else if (filter == 'S') {
@@ -396,8 +395,7 @@ void viewByBatchOrSection() {
                 printf("ID: %d, Name: %s %s, Section: %c, Batch: %d, Grade: %.2f, Phone: %s\n",
                        student.id, student.firstname, student.lastname, student.section,
                        student.batch, student.grade, student.phone);
-                found = 1;
-                break;  // Exit function after finding and printing the first matching student
+                found = 1;  // Mark that at least one student was found
             }
         }
     }
