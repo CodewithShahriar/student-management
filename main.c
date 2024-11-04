@@ -338,16 +338,20 @@ void printStudentsWithGrade() {
 }
 
 
-void InsertMidMarks() {
-    FILE *fp = fopen("students_data.dat", "a");
+void InsertMidMarks(){
+    FILE *fp = fopen("mark_database.dat", "a");
     if (fp == NULL) {
-        printf("Can't open students_data.dat\n");
+        printf("Can't open mark_database.dat\n");
         return;
     }
 
+    char courseCode[10];
     int id;
     char fullName[40];
     int attendanceMarks, ctMarks, assignmentMarks, midMarks;
+
+    printf("Enter course code (e.g., CSE123): ");
+    scanf("%9s", courseCode);
 
     printf("Enter student ID: ");
     while (scanf("%d", &id) != 1) {
@@ -358,7 +362,7 @@ void InsertMidMarks() {
     getchar(); // Clear newline character
     printf("Enter student full name: ");
     fgets(fullName, sizeof(fullName), stdin);
-    fullName[strcspn(fullName, "\n")] = '\0'; // Remove trailing newline
+    fullName[strcspn(fullName, "\n")] = '\0';
 
     printf("Enter Attendance Marks: ");
     while (scanf("%d", &attendanceMarks) != 1 || attendanceMarks < 0 || attendanceMarks > 99) {
@@ -384,40 +388,40 @@ void InsertMidMarks() {
         getchar();
     }
 
-    fprintf(fp, "%d,%s,%d,%d,%d,%d\n", id, fullName, attendanceMarks, ctMarks, assignmentMarks, midMarks);
+    fprintf(fp, "%s, %d, %s, %d, %d, %d, %d\n", courseCode, id, fullName, attendanceMarks, ctMarks, assignmentMarks, midMarks);
     fclose(fp);
 }
 
-void StudentMarksDatabase() {
-    FILE *fp = fopen("students_data.dat", "r");
+void StudentMarksDatabase(){
+    FILE *fp = fopen("mark_database.dat", "r");
     if (fp == NULL) {
-        printf("Can't open students_data.dat\n");
+        printf("Can't open mark_database.dat\n");
         return;
     }
 
+    char courseCode[10], searchCourseCode[10];
     int id, searchId, attendanceMarks, ctMarks, assignmentMarks, midMarks;
     char fullName[40];
-    boolean found = FALSE;
+    int found = 0;
+
+    printf("Enter course code to search: ");
+    scanf("%9s", searchCourseCode);
 
     printf("Enter student ID to search: ");
     scanf("%d", &searchId);
 
-    // Ensure buffer is clean
-    getchar();
-
-    // Loop through each line in the file
-    while (fscanf(fp, "%d,%39[^,],%d,%d,%d,%d\n", &id, fullName, &attendanceMarks, &ctMarks, &assignmentMarks, &midMarks) == 6) {
-        if (id == searchId) {
+    while (fscanf(fp, "%9[^,], %d, %39[^,], %d, %d, %d, %d\n", courseCode, &id, fullName, &attendanceMarks, &ctMarks, &assignmentMarks, &midMarks) == 7) {
+        if (strcmp(courseCode, searchCourseCode) == 0 && id == searchId) {
             int total = attendanceMarks + ctMarks + assignmentMarks;
-            printf("ID: %d, Name: %s, Attendance Marks: %d, CT Marks: %d, Assignment Marks: %d, Mid Marks: %d, Total: %d\n",
-                   id, fullName, attendanceMarks, ctMarks, assignmentMarks, midMarks, total);
-            found = TRUE;
+            printf("Course Code: %s, ID: %d, Name: %s, Attendance Marks: %d, CT Marks: %d, Assignment Marks: %d, Total: %d\n",
+                   courseCode, id, fullName, attendanceMarks, ctMarks, assignmentMarks, total);
+            found = 1;
             break;
         }
     }
 
     if (!found) {
-        printf("No record found for ID %d\n", searchId);
+        printf("No record found for Course Code %s and ID %d\n", searchCourseCode, searchId);
     }
 
     fclose(fp);
