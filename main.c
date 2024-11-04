@@ -25,7 +25,7 @@ typedef struct{
     char firstname[20];
     char lastname[20];
     char section;
-    int year;
+    int batch;
     float grade;
 }StudentT;
 
@@ -77,15 +77,15 @@ int main(){
                     fgets(student.lastname,20,stdin);
                     student.lastname[strlen(student.lastname)-1]='\0';
 
-                    printf("Give student's registration year: ");
-                    scanf("%d", &student.year);
+                    printf("Give student's batch: ");
+                    scanf("%d", &student.batch);
                     getchar();
 
-                    printf("Give student's grade(0-20): ");
+                    printf("Give student's grade(out of 4): ");
                     scanf("%g", &student.grade);
                     getchar();
                     while(student.grade<0 || student.grade>20){
-                        printf("Give student's grade(0-20): ");
+                        printf("Give student's grade(out of 4): ");
                         scanf("%g", &student.grade);
                         getchar();
                     }
@@ -106,7 +106,7 @@ int main(){
                     indexRec.recNo = size;
                     RecBSTInsert(&Root, indexRec);
                     fprintf(fp,"%d, %s, %s, %c, %d, %g%c", student.id, student.firstname, student.lastname,
-                            student.section, student.year, student.grade, '\n');
+                            student.section, student.batch, student.grade, '\n');
 
                     size++;
                     fclose(fp);
@@ -219,7 +219,7 @@ int BuildBST(BinTreePointer *Root){
     }
     else{
         while(TRUE){
-            nscan = fscanf(fp,"%d, %20[^,], %20[^,], %c, %d, %g%c", &student.id, student.firstname, student.lastname, &student.section, &student.year, &student.grade, &termch);
+            nscan = fscanf(fp,"%d, %20[^,], %20[^,], %c, %d, %g%c", &student.id, student.firstname, student.lastname, &student.section, &student.batch, &student.grade, &termch);
             if (nscan == EOF) break;
             if (nscan != 7 || termch != '\n'){
                 printf("Improper file format\n");
@@ -250,7 +250,7 @@ void PrintStudent(int RecNum){
         printf("Can't open students_data.dat\n");
     else{
         while(lines <= RecNum){
-            nscan = fscanf(infile, "%d, %20[^,], %20[^,], %c, %d, %f%c", &student.id, student.firstname, student.lastname, &student.section, &student.year, &student.grade, &termch);
+            nscan = fscanf(infile, "%d, %20[^,], %20[^,], %c, %d, %f%c", &student.id, student.firstname, student.lastname, &student.section, &student.batch, &student.grade, &termch);
             if(nscan == EOF) break;
             if(nscan != 7 || termch != '\n'){
                 printf("Improper file format\n");
@@ -260,7 +260,7 @@ void PrintStudent(int RecNum){
                 lines++;
         }
         if(lines == RecNum + 1)  // Print only if the correct record is reached
-            printf("ID: %d, Name: %s %s, Section: %c, Registration Year: %d, Grade: %.2f\n", student.id, student.firstname, student.lastname, student.section, student.year, student.grade);
+            printf("ID: %d, Name: %s %s, Section: %c, Batch: %d, Grade: %.2f\n", student.id, student.firstname, student.lastname, student.section, student.batch, student.grade);
     }
     fclose(infile);
 }
@@ -289,7 +289,7 @@ void printStudentsWithGrade() {
         while (TRUE) {
             nscan = fscanf(infile, "%d, %20[^,], %20[^,], %c, %d, %f%c", 
                            &student.id, student.firstname, student.lastname, 
-                           &student.section, &student.year, &student.grade, 
+                           &student.section, &student.batch, &student.grade, 
                            &termch);
             if (nscan == EOF) break;
             if (nscan != 7 || termch != '\n') {
@@ -298,9 +298,9 @@ void printStudentsWithGrade() {
             }
             // Check for exact grade match
             if (student.grade == theGrade) {
-                printf("ID: %d, Name: %s %s, Section: %c, Registration Year: %d, Grade: %.2f\n", 
+                printf("ID: %d, Name: %s %s, Section: %c, Batch: %d, Grade: %.2f\n", 
                        student.id, student.firstname, student.lastname, 
-                       student.section, student.year, student.grade);
+                       student.section, student.batch, student.grade);
                 found = TRUE;
             }
         }
