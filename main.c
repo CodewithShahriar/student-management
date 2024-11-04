@@ -268,7 +268,7 @@ void PrintStudent(int RecNum) {
             }
         }
         if (lines == RecNum + 1) { // Correctly reached the record number
-            printf("ID: %d, Name: %s %s, Section: %c, Registration Year: %d, Grade: %.2f\n", 
+            printf("ID: %d, Name: %s %s, Section: %c, Batch: %d, Grade: %.2f\n", 
                    student.id, student.firstname, student.lastname, 
                    student.section, student.batch, student.grade);
         }
