@@ -127,11 +127,12 @@ int main(){
             else
                 printf("There is no student with this id");
         }
-        if(choice == 3){
-            printf("Print all students (id, Number of record) ascending order(id): \n");
+        if (choice == 3) {
+            printf("Print all students (ID, Name, Section, Batch, Grade) in ascending order:\n");
             RecBSTInorder(Root);
             printf("\n");
         }
+
         if(choice == 4){
             printf("Print students with a >= given grade: \n");
             printStudentsWithGrade();
@@ -146,7 +147,7 @@ void menu(int *choice){
     printf("-------------------------------------------------\n");
     printf("1. Insert new student\n");
     printf("2. Search for a student\n");
-    printf("3. Print all students (Traverse Inorder)\n");
+    printf("3. Print all students \n");
     printf("4. Print students with a >= given grade\n");
     printf("5. Quit\n");
     printf("\nChoice: ");
@@ -194,13 +195,17 @@ void RecBSTSearch(BinTreePointer Root, BinTreeElementType KeyValue, boolean *Fou
             }
 }
 
-void RecBSTInorder(BinTreePointer Root){
-    if (Root!=NULL){
-        RecBSTInorder(Root->LChild);
-        printf("(%d, %d), ", Root->Data.id, Root->Data.recNo);
-        RecBSTInorder(Root->RChild);
+void RecBSTInorder(BinTreePointer Root) {
+    if (Root != NULL) {
+        RecBSTInorder(Root->LChild); // Traverse left subtree
+        
+        // Print student information in the specified format
+        PrintStudent(Root->Data.recNo); // Fetches and prints student data based on recNo
+        
+        RecBSTInorder(Root->RChild); // Traverse right subtree
     }
 }
+
 
 int BuildBST(BinTreePointer *Root){
     FILE *fp;
@@ -239,28 +244,34 @@ int BuildBST(BinTreePointer *Root){
     return size;
 }
 
-void PrintStudent(int RecNum){
+void PrintStudent(int RecNum) {
     FILE *infile;
     int nscan, lines = 0;
     char termch;
     StudentT student;
 
     infile = fopen("students_data.dat", "r");
-    if(infile == NULL)
+    if (infile == NULL) {
         printf("Can't open students_data.dat\n");
-    else{
-        while(lines <= RecNum){
-            nscan = fscanf(infile, "%d, %20[^,], %20[^,], %c, %d, %f%c", &student.id, student.firstname, student.lastname, &student.section, &student.batch, &student.grade, &termch);
-            if(nscan == EOF) break;
-            if(nscan != 7 || termch != '\n'){
+    } else {
+        while (lines <= RecNum) {
+            nscan = fscanf(infile, "%d, %20[^,], %20[^,], %c, %d, %f%c", 
+                           &student.id, student.firstname, student.lastname, 
+                           &student.section, &student.batch, &student.grade, 
+                           &termch);
+            if (nscan == EOF) break;
+            if (nscan != 7 || termch != '\n') {
                 printf("Improper file format\n");
                 break;
-            }
-            else
+            } else {
                 lines++;
+            }
         }
-        if(lines == RecNum + 1)  // Print only if the correct record is reached
-            printf("ID: %d, Name: %s %s, Section: %c, Batch: %d, Grade: %.2f\n", student.id, student.firstname, student.lastname, student.section, student.batch, student.grade);
+        if (lines == RecNum + 1) { // Correctly reached the record number
+            printf("ID: %d, Name: %s %s, Section: %c, Registration Year: %d, Grade: %.2f\n", 
+                   student.id, student.firstname, student.lastname, 
+                   student.section, student.batch, student.grade);
+        }
     }
     fclose(infile);
 }
