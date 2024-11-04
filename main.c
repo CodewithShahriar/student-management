@@ -338,6 +338,12 @@ void printStudentsWithGrade() {
 }
 
 
+void toUpperCase(char *str) {
+    for (int i = 0; str[i]; i++) {
+        str[i] = toupper(str[i]);
+    }
+}
+
 void InsertMidMarks(){
     FILE *fp = fopen("mark_database.dat", "a");
     if (fp == NULL) {
@@ -406,11 +412,13 @@ void StudentMarksDatabase(){
 
     printf("Enter course code to search: ");
     scanf("%9s", searchCourseCode);
+    toUpperCase(searchCourseCode);  // Convert searchCourseCode to uppercase
 
     printf("Enter student ID to search: ");
     scanf("%d", &searchId);
 
     while (fscanf(fp, "%9[^,], %d, %39[^,], %d, %d, %d, %d\n", courseCode, &id, fullName, &attendanceMarks, &ctMarks, &assignmentMarks, &midMarks) == 7) {
+        toUpperCase(courseCode);  // Convert courseCode from file to uppercase for comparison
         if (strcmp(courseCode, searchCourseCode) == 0 && id == searchId) {
             int total = attendanceMarks + ctMarks + assignmentMarks;
             printf("Course Code: %s, ID: %d, Name: %s, Attendance Marks: %d, CT Marks: %d, Assignment Marks: %d, Total: %d\n",
