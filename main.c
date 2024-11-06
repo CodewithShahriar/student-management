@@ -1,436 +1,240 @@
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
-#include <ctype.h>
+#include <stdlib.h>
 
-typedef struct{
-    int id;
-    int recNo;
-} BinTreeElementType;
+#define PASSWORD "faculty123"
 
-typedef struct BinTreeNode *BinTreePointer;
+// Structure for student information
+typedef struct Student {
+    int studentID;
+    char firstName[50];
+    char lastName[50];
+    char batch[20];
+    char section[5];
+    char grade[5];
+} Student;
 
-struct BinTreeNode{
-    BinTreeElementType Data;
-    BinTreePointer LChild, RChild;
-} ;
+// Structure for midterm marks
+typedef struct Marks {
+    int studentID;
+    float midMarks;
+} Marks;
 
+// Function prototypes
+void insertStudent();
+void searchStudent();
+void printAllStudents();
+void insertMidMarks();
+void studentMarksDatabase();
+int verifyPassword();
+void userMenu();
+void viewerMenu();
 
-typedef enum{
-    FALSE, TRUE
-} boolean;
-
-typedef struct{
-    int id;
-    char firstname[20];
-    char lastname[20];
-    char section;
-    int batch;
-    float grade;
-} StudentT;
-
-void CreateBST(BinTreePointer *Root);
-boolean BSTEmpty(BinTreePointer Root);
-void RecBSTInsert(BinTreePointer *Root, BinTreeElementType Item);
-void RecBSTSearch(BinTreePointer Root, BinTreeElementType KeyValue, boolean *Found, BinTreePointer *LocPtr);
-void RecBSTInorder(BinTreePointer Root);
-void menu(int *choice);
-int BuildBST(BinTreePointer *Root);
-void PrintStudent(int RecNum);
-void printStudentsWithGrade();
-void InsertMidMarks();
-void StudentMarksDatabase();
-
-int main(){
-    FILE *fp;
-    boolean found;
-    BinTreePointer Root, LocPtr;
-    int choice, size;
-    BinTreeElementType indexRec;
-    StudentT student;
-
-    size = BuildBST(&Root);
-    do{
-        menu(&choice);
-        if(choice == 1){
-            // Existing Insert Student option
-            fp = fopen("students_data.dat","a");
-            if (fp == NULL){
-                printf("Can't open students_data.dat\n");
-                exit(1);
-            }
-            else{
-                printf("Give student's ID: ");
-                scanf("%d", &student.id);
-                getchar();
-                while(student.id < 0){
-                    printf("ID can't be a negative number\n");
-                    printf("Give student's ID: ");
-                    scanf("%d", &student.id);
-                    getchar();
-                }
-                indexRec.id = student.id;
-                RecBSTSearch(Root, indexRec, &found, &LocPtr);
-                if(found == FALSE){
-                    printf("Give student firstname: ");
-                    fgets(student.firstname, 20, stdin);
-                    student.firstname[strlen(student.firstname) - 1] = '\0';
-
-                    printf("Give student lastname: ");
-                    fgets(student.lastname, 20, stdin);
-                    student.lastname[strlen(student.lastname) - 1] = '\0';
-
-                    printf("Give student's batch: ");
-                    scanf("%d", &student.batch);
-                    getchar();
-
-                    printf("Give student's grade (out of 4): ");
-                    scanf("%f", &student.grade);
-                    getchar();
-                    while(student.grade < 0 || student.grade > 20){
-                        printf("Give student's grade (out of 4): ");
-                        scanf("%f", &student.grade);
-                        getchar();
-                    }
-
-                    printf("Give student section: ");
-                    scanf("%c", &student.section);
-                    getchar();
-
-                    // Validation to ensure section is between 'A' and 'Z'
-                    while(student.section < 'A' || student.section > 'Z'){
-                        printf("Section must be a letter between A and Z.\n");
-                        printf("Give student section (A-Z): ");
-                        scanf("%c", &student.section);
-                        getchar();
-                    }
-
-                    printf("\nsize = %d\n", size);
-                    indexRec.recNo = size;
-                    RecBSTInsert(&Root, indexRec);
-                    fprintf(fp, "%d, %s, %s, %c, %d, %.2f\n", student.id, student.firstname, student.lastname,
-                            student.section, student.batch, student.grade);
-
-                    size++;
-                    fclose(fp);
-                }
-                else
-                    printf("A student with the same ID is already in the tree.\n");
-            }
-        }
-        else if(choice == 2){
-            // Existing Search Student option
-            printf("Give student's ID: ");
-            scanf("%d", &student.id);
-            indexRec.id = student.id;
-            RecBSTSearch(Root, indexRec, &found, &LocPtr);
-            if(found == TRUE){
-                indexRec.recNo = LocPtr->Data.recNo;
-                PrintStudent(indexRec.recNo);
-            }
-            else
-                printf("There is no student with this ID.\n");
-        }
-        else if(choice == 3) {
-            // Existing Print All Students option
-            printf("Print all students (ID, Name, Section, Batch, Grade) in ascending order:\n");
-            RecBSTInorder(Root);
-            printf("\n");
-        }
-        else if(choice == 4){
-            // Existing Print Students With Grade option
-            printf("Print students with a >= given grade: \n");
-            printStudentsWithGrade();
-        }
-        else if(choice == 6){
-            // New Insert Mid Marks option
-            InsertMidMarks();
-        }
-        else if(choice == 7){
-            // New Student Marks Database option
-            StudentMarksDatabase();
-        }
-    } while(choice != 5);
-
-    system("PAUSE");
-}
-
-void menu(int *choice){
-    printf("\n                  MENU                  \n");
-    printf("-------------------------------------------------\n");
-    printf("1. Insert new student\n");
-    printf("2. Search for a student\n");
-    printf("3. Print all students \n");
-    printf("4. Print students with a >= given grade\n");
-    printf("5. Quit\n");
-    printf("6. Insert Mid Marks\n");
-    printf("7. Student Marks Database\n");
-    printf("\nChoice: ");
-    do{
-        scanf("%d", choice);
-        getchar();
-    } while (*choice < 1 || *choice > 7);
-}
-
-void CreateBST(BinTreePointer *Root){*Root = NULL;}
-
-boolean BSTEmpty(BinTreePointer Root){return (Root==NULL);}
-
-void RecBSTInsert(BinTreePointer *Root, BinTreeElementType Item){
-    if(BSTEmpty(*Root)){
-        (*Root) = (BinTreePointer)malloc(sizeof (struct BinTreeNode));
-        (*Root) ->Data.id = Item.id;
-        (*Root) ->Data.recNo = Item.recNo;
-        (*Root) ->LChild = NULL;
-        (*Root) ->RChild = NULL;
-    }
-    else
-        if (Item.id < (*Root) ->Data.id)
-            RecBSTInsert(&(*Root) ->LChild, Item);
-        else if (Item.id > (*Root) ->Data.id)
-            RecBSTInsert(&(*Root) ->RChild, Item);
-        else
-            printf("This id already exists in the tree\n", Item.id);
-}
-
-void RecBSTSearch(BinTreePointer Root, BinTreeElementType KeyValue, boolean *Found, BinTreePointer *LocPtr){
-    boolean stop;
-
-    if (BSTEmpty(Root))
-        *Found=FALSE;
-    else
-        if (KeyValue.id < Root->Data.id)
-            RecBSTSearch(Root->LChild, KeyValue, &(*Found), &(*LocPtr));
-        else
-            if (KeyValue.id > Root->Data.id)
-                RecBSTSearch(Root->RChild, KeyValue, &(*Found), &(*LocPtr));
-            else{
-                *Found = TRUE;
-                *LocPtr = Root;
-            }
-}
-
-void RecBSTInorder(BinTreePointer Root) {
-    if (Root != NULL) {
-        RecBSTInorder(Root->LChild); // Traverse left subtree
-        
-        // Print student information in the specified format
-        PrintStudent(Root->Data.recNo); // Fetches and prints student data based on recNo
-        
-        RecBSTInorder(Root->RChild); // Traverse right subtree
-    }
-}
-
-
-int BuildBST(BinTreePointer *Root){
-    FILE *fp;
-    StudentT student;
-    BinTreeElementType indexRec;
-    int size, nscan;
-    char termch;
-
-    CreateBST(Root);
-
-    size = 0;
-    fp = fopen("students_data.dat","r");
-    if (fp == NULL){
-        printf("Can't open students_data.dat\n");
-        exit(1);
-    }
-    else{
-        while(TRUE){
-            nscan = fscanf(fp,"%d, %20[^,], %20[^,], %c, %d, %g%c", &student.id, student.firstname, student.lastname, &student.section, &student.batch, &student.grade, &termch);
-            if (nscan == EOF) break;
-            if (nscan != 7 || termch != '\n'){
-                printf("Improper file format\n");
-                break;
-            }
-            else{
-                indexRec.id = student.id;
-                indexRec.recNo = size;
-
-                RecBSTInsert((Root), indexRec);
-                size++;
-            }
-        }
-    }
-    fclose(fp);
-
-    return size;
-}
-
-void PrintStudent(int RecNum) {
-    FILE *infile;
-    int nscan, lines = 0;
-    char termch;
-    StudentT student;
-
-    infile = fopen("students_data.dat", "r");
-    if (infile == NULL) {
-        printf("Can't open students_data.dat\n");
-    } else {
-        while (lines <= RecNum) {
-            nscan = fscanf(infile, "%d, %20[^,], %20[^,], %c, %d, %f%c", 
-                           &student.id, student.firstname, student.lastname, 
-                           &student.section, &student.batch, &student.grade, 
-                           &termch);
-            if (nscan == EOF) break;
-            if (nscan != 7 || termch != '\n') {
-                printf("Improper file format\n");
-                break;
-            } else {
-                lines++;
-            }
-        }
-        if (lines == RecNum + 1) { // Correctly reached the record number
-            printf("ID: %d, Name: %s %s, Section: %c, Batch: %d, Grade: %.2f\n", 
-                   student.id, student.firstname, student.lastname, 
-                   student.section, student.batch, student.grade);
-        }
-    }
-    fclose(infile);
-}
-
-void printStudentsWithGrade() {
-    FILE *infile;
-    int nscan;
-    char termch;
-    StudentT student;
-    float theGrade;
-    boolean found = FALSE;
-
-    printf("Give the specific grade: ");
-    scanf("%f", &theGrade);
-    while (theGrade < 0 || theGrade > 20) {
-        printf("Grade must be between 0 and 20.\n");
-        printf("Give the specific grade: ");
-        scanf("%f", &theGrade);
-    }
-
-    infile = fopen("students_data.dat", "r");
-    if (infile == NULL) {
-        printf("Can't open students_data.dat\n");
-    } else {
-        printf("Students with grade = %.2f:\n", theGrade);
-        while (TRUE) {
-            nscan = fscanf(infile, "%d, %20[^,], %20[^,], %c, %d, %f%c", 
-                           &student.id, student.firstname, student.lastname, 
-                           &student.section, &student.batch, &student.grade, 
-                           &termch);
-            if (nscan == EOF) break;
-            if (nscan != 7 || termch != '\n') {
-                printf("Improper file format\n");
-                break;
-            }
-            // Check for exact grade match
-            if (student.grade == theGrade) {
-                printf("ID: %d, Name: %s %s, Section: %c, Batch: %d, Grade: %.2f\n", 
-                       student.id, student.firstname, student.lastname, 
-                       student.section, student.batch, student.grade);
-                found = TRUE;
-            }
-        }
-        if (!found) {
-            printf("No students found with grade = %.2f\n", theGrade);
-        }
-    }
-    fclose(infile);
-}
-
-
-void toUpperCase(char *str) {
-    for (int i = 0; str[i]; i++) {
-        str[i] = toupper(str[i]);
-    }
-}
-
-void InsertMidMarks(){
-    FILE *fp = fopen("mark_database.dat", "a");
-    if (fp == NULL) {
-        printf("Can't open mark_database.dat\n");
+// Function to insert a new student and save to file
+void insertStudent() {
+    Student student;
+    FILE *file = fopen("students_data.dat", "ab");
+    if (file == NULL) {
+        printf("Error opening file.\n");
         return;
     }
 
-    char courseCode[10];
-    int id;
-    char fullName[40];
-    int attendanceMarks, ctMarks, assignmentMarks, midMarks;
+    printf("Enter Student ID: ");
+    scanf("%d", &student.studentID);
+    printf("Enter First Name: ");
+    scanf("%s", student.firstName);
+    printf("Enter Last Name: ");
+    scanf("%s", student.lastName);
+    printf("Enter Batch: ");
+    scanf("%s", student.batch);
+    printf("Enter Section: ");
+    scanf("%s", student.section);
+    printf("Enter Grade: ");
+    scanf("%s", student.grade);
 
-    printf("Enter course code (e.g., CSE123): ");
-    scanf("%9s", courseCode);
+    fwrite(&student, sizeof(Student), 1, file);
+    fclose(file);
+    printf("Student record inserted successfully.\n");
+}
 
-    printf("Enter student ID: ");
-    while (scanf("%d", &id) != 1) {
-        printf("Invalid input. Enter a valid numeric ID: ");
-        getchar(); // Clear invalid input
+// Function to search for a student by ID from file
+void searchStudent() {
+    int studentID;
+    Student student;
+    FILE *file = fopen("students_data.dat", "rb");
+    if (file == NULL) {
+        printf("Error opening file.\n");
+        return;
     }
 
-    getchar(); // Clear newline character
-    printf("Enter student full name: ");
-    fgets(fullName, sizeof(fullName), stdin);
-    fullName[strcspn(fullName, "\n")] = '\0';
+    printf("Enter Student ID to search: ");
+    scanf("%d", &studentID);
 
-    printf("Enter Attendance Marks: ");
-    while (scanf("%d", &attendanceMarks) != 1 || attendanceMarks < 0 || attendanceMarks > 99) {
-        printf("Invalid input. Enter a number between 0 and 99: ");
-        getchar();
+    while (fread(&student, sizeof(Student), 1, file)) {
+        if (student.studentID == studentID) {
+            printf("ID: %d, Name: %s %s, Batch: %s, Section: %s, Grade: %s\n",
+                   student.studentID, student.firstName, student.lastName, student.batch, student.section, student.grade);
+            fclose(file);
+            return;
+        }
+    }
+    printf("Student ID %d not found.\n", studentID);
+    fclose(file);
+}
+
+// Function to print all students from file
+void printAllStudents() {
+    Student student;
+    FILE *file = fopen("students_data.dat", "rb");
+    if (file == NULL) {
+        printf("Error opening file.\n");
+        return;
     }
 
-    printf("Enter CT Marks: ");
-    while (scanf("%d", &ctMarks) != 1 || ctMarks < 0 || ctMarks > 99) {
-        printf("Invalid input. Enter a number between 0 and 99: ");
-        getchar();
+    printf("All Students:\n");
+    while (fread(&student, sizeof(Student), 1, file)) {
+        printf("ID: %d, Name: %s %s, Batch: %s, Section: %s, Grade: %s\n",
+               student.studentID, student.firstName, student.lastName, student.batch, student.section, student.grade);
+    }
+    fclose(file);
+}
+
+// Function to insert midterm marks for a student and save to file
+void insertMidMarks() {
+    Marks marks;
+    FILE *file = fopen("mark_database.dat", "ab");
+    if (file == NULL) {
+        printf("Error opening file.\n");
+        return;
     }
 
-    printf("Enter Assignment Marks: ");
-    while (scanf("%d", &assignmentMarks) != 1 || assignmentMarks < 0 || assignmentMarks > 99) {
-        printf("Invalid input. Enter a number between 0 and 99: ");
-        getchar();
-    }
-
+    printf("Enter Student ID: ");
+    scanf("%d", &marks.studentID);
     printf("Enter Mid Marks: ");
-    while (scanf("%d", &midMarks) != 1 || midMarks < 0 || midMarks > 99) {
-        printf("Invalid input. Enter a number between 0 and 99: ");
-        getchar();
-    }
+    scanf("%f", &marks.midMarks);
 
-    fprintf(fp, "%s, %d, %s, %d, %d, %d, %d\n", courseCode, id, fullName, attendanceMarks, ctMarks, assignmentMarks, midMarks);
-    fclose(fp);
+    fwrite(&marks, sizeof(Marks), 1, file);
+    fclose(file);
+    printf("Mid marks inserted successfully.\n");
 }
 
-void StudentMarksDatabase(){
-    FILE *fp = fopen("mark_database.dat", "r");
-    if (fp == NULL) {
-        printf("Can't open mark_database.dat\n");
+// Function to display student marks database from file
+void studentMarksDatabase() {
+    Marks marks;
+    FILE *file = fopen("mark_database.dat", "rb");
+    if (file == NULL) {
+        printf("Error opening file.\n");
         return;
     }
 
-    char courseCode[10], searchCourseCode[10];
-    int id, searchId, attendanceMarks, ctMarks, assignmentMarks, midMarks;
-    char fullName[40];
-    int found = 0;
+    printf("Student Marks Database:\n");
+    while (fread(&marks, sizeof(Marks), 1, file)) {
+        printf("ID: %d, Mid Marks: %.2f\n", marks.studentID, marks.midMarks);
+    }
+    fclose(file);
+}
 
-    printf("Enter course code to search: ");
-    scanf("%9s", searchCourseCode);
-    toUpperCase(searchCourseCode);  // Convert searchCourseCode to uppercase
+// Password verification function
+int verifyPassword() {
+    char password[50];
+    printf("Enter password: ");
+    scanf("%s", password);
+    return strcmp(password, PASSWORD) == 0;
+}
 
-    printf("Enter student ID to search: ");
-    scanf("%d", &searchId);
+// Main menu function for User section
+void userMenu() {
+    int choice;
+    do {
+        printf("\nUser Menu:\n");
+        printf("1. Insert new student\n");
+        printf("2. Search for a student\n");
+        printf("3. Print all students\n");
+        printf("4. Quit\n");
+        printf("5. Insert Mid Marks\n");
+        printf("6. Student Marks Database\n");
+        printf("Enter your choice: ");
+        scanf("%d", &choice);
 
-    while (fscanf(fp, "%9[^,], %d, %39[^,], %d, %d, %d, %d\n", courseCode, &id, fullName, &attendanceMarks, &ctMarks, &assignmentMarks, &midMarks) == 7) {
-        toUpperCase(courseCode);  // Convert courseCode from file to uppercase for comparison
-        if (strcmp(courseCode, searchCourseCode) == 0 && id == searchId) {
-            int total = attendanceMarks + ctMarks + assignmentMarks;
-            printf("Course Code: %s, ID: %d, Name: %s, Attendance Marks: %d, CT Marks: %d, Assignment Marks: %d, Total: %d\n",
-                   courseCode, id, fullName, attendanceMarks, ctMarks, assignmentMarks, total);
-            found = 1;
+        switch (choice) {
+            case 1:
+                insertStudent();
+                break;
+            case 2:
+                searchStudent();
+                break;
+            case 3:
+                printAllStudents();
+                break;
+            case 4:
+                printf("Exiting User Menu.\n");
+                return;
+            case 5:
+                insertMidMarks();
+                break;
+            case 6:
+                studentMarksDatabase();
+                break;
+            default:
+                printf("Invalid choice.\n");
+        }
+    } while (choice != 4);
+}
+
+// Main menu function for Viewer section
+void viewerMenu() {
+    int choice;
+    do {
+        printf("\nViewer Menu:\n");
+        printf("1. Search for a student\n");
+        printf("2. Student Marks Database\n");
+        printf("3. Quit\n");
+        printf("Enter your choice: ");
+        scanf("%d", &choice);
+
+        switch (choice) {
+            case 1:
+                searchStudent();
+                break;
+            case 2:
+                studentMarksDatabase();
+                break;
+            case 3:
+                printf("Exiting Viewer Menu.\n");
+                return;
+            default:
+                printf("Invalid choice.\n");
+        }
+    } while (choice != 3);
+}
+
+// Main function
+int main() {
+    int mainChoice;
+
+    while (1) {
+        printf("\nMain Menu:\n");
+        printf("1. User\n");
+        printf("2. Viewer\n");
+        printf("3. Exit\n");
+        printf("Enter your choice: ");
+        scanf("%d", &mainChoice);
+
+        if (mainChoice == 1) {
+            if (verifyPassword()) {
+                userMenu();
+            } else {
+                printf("Wrong password. Try again.\n");
+            }
+        } else if (mainChoice == 2) {
+            viewerMenu();
+        } else if (mainChoice == 3) {
+            printf("Exiting program.\n");
             break;
+        } else {
+            printf("Invalid choice. Try again.\n");
         }
     }
 
-    if (!found) {
-        printf("No record found for Course Code %s and ID %d\n", searchCourseCode, searchId);
-    }
-
-    fclose(fp);
+    return 0;
 }
